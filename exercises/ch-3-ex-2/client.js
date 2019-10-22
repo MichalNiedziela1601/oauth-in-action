@@ -136,6 +136,13 @@ app.get('/fetch_resource', function(req, res) {
 		/*
 		 * Instead of always returning an error, refresh the access token if we have a refresh token
 		 */
+		if(refresh_token) {
+			refreshAccessToken(req,res);
+			return;
+		} else {
+			res.render('error',{error: resource.statusCode});
+			return;
+		}
 
 	}
 	
@@ -147,6 +154,30 @@ var refreshAccessToken = function(req, res) {
 	/*
 	 * Use the refresh token to get a new access token
 	 */
+
+	var form_data = qs.stringify({
+		grant_type: 'refresh_token',
+		refresh_token: refresh_token
+	});
+
+	var headers = {
+		'Content-Type': 'application/x-www-form-urlencoded',
+		'Authorization': 'Basic ' + encodeClientCredentials(client.client_id, client.client_secret)
+	};
+
+	var tokeRes = request('POST',authServer.tokenEndpoint, {
+		body: form_data,
+		headers: headers
+	})
+
+	if(tokeRes.statusCode >= 200 && tokeRes.statusCode < 300) {
+		var body = JSON.parse(tokeRes.getBOdy());
+		access_token = body.access_token;
+		if(body.refresh_token) {
+			refresh_token = body.refresh_token;
+		}
+		res.redirect('/fetch_resource')
+	}
 	
 };
 
