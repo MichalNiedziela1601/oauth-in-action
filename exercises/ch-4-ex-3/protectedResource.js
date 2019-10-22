@@ -59,13 +59,22 @@ var requireAccessToken = function(req, res, next) {
 };
 
 app.get('/produce', getAccessToken, requireAccessToken, function(req, res) {
-	var produce = {fruit: ['apple', 'banana', 'kiwi'], 
-		veggies: ['lettuce', 'onion', 'potato'], 
-		meats: ['bacon', 'steak', 'chicken breast']};	
+	var produce = {fruit: [],
+		veggies: [],
+		meats: []};
+
+
 
 	/*
 	 * Add different kinds of produce based on the incoming token's scope
 	 */
+	if(__.contains(req.access_token.scope, 'fruit')) {
+		produce.fruit = ['apple', 'banana', 'kiwi'];
+	} else if (__.contains(req.access_token.scope,'veggies')) {
+		produce.veggies = ['lettuce', 'onion', 'potato']
+	} else if (__.contains(req.access_token.scope, 'meats')) {
+		produce.meats = ['bacon', 'steak', 'chicken breast']
+	}
 
 	res.json(produce);
 });
